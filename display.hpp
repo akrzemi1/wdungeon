@@ -5,6 +5,5 @@ class Display
 {
 public:
   Extent size() const;
+  void clear();
 };
-
-

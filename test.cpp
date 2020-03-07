@@ -12,9 +12,72 @@ Extent map_extent {.height = 16, .width = 32};
 class Map
 {
 public:
+  explicit Map(Extent e) : extent(e), pixels(e.height * e.width) {}
   const Extent extent;
-  std::vector<char> pixels = std::vector<char>(extent.height * extent.width);
+  std::vector<char> pixels;
 };
+
+
+std::string::const_iterator skip_white(std::string::const_iterator it, std::string::const_iterator end)
+{
+  while (it != end && std::isspace(*it) )
+    ++it;
+
+  return it;
+}
+
+std::string select(std::string::const_iterator& it, std::string::const_iterator end, int width)
+{
+  int d = std::distance(it, end);
+  if (d < width)
+  {
+    std::string ans(it, end);
+    it = end;
+    return ans + std::string(width - d, ' ');
+  }
+
+  std::string ans (it, it + width);
+  it += width;
+  return ans;
+}
+
+std::string map_char(char)
+{
+  return "\e[1;40m"" ""\e[0m";
+}
+
+std::string select_map(Map const& map, int row)
+{
+  if (row == 0 || row == map.extent.height)
+    return std::string(map.extent.width + 2, ' ');
+
+  std::string ans(1, ' ');
+
+  for (int i = 0; i < map.extent.width; ++i)
+    ans += map_char(map.pixels[row * map.extent.width + i]);
+
+  ans.push_back(' ');
+  return ans;
+}
+
+void print_screen(std::string const& text, Map const& map)
+{
+  Display{}.clear();
+  const Extent screen = Display{}.size();
+  std::string::const_iterator it = skip_white(text.begin(), text.end());
+
+  for(int row = 0; it != text.end() || row < map.extent.height + 1; ++row)
+  {
+    bool map_line = row < map.extent.height + 2;
+    int space_in_line = map_line ? screen.width - map.extent.width - 2 : screen.width;
+
+    std::string text = select(it, text.end(), space_in_line);
+    if (map_line)
+      text += select_map(map, row);
+
+    std::cout << text << "\n";
+  }
+}
 
 void print_screen()
 {
@@ -44,21 +107,23 @@ void test_file(std::string file_name);
 
 int main()
 {
-  printf("width %d\n", Display{}.size().width);
-  printf("height %d\n", Display{}.size().height);
+//  printf("width %d\n", Display{}.size().width);
+//  printf("height %d\n", Display{}.size().height);
 
+  Map map(map_extent);
 
   for (bool playing = true; playing;)
   {
-    test_file("./test.plot");
-    break;
+    print_screen("dupa dupa", map);
+    //test_file("./test.plot");
+    //break;
 //    print_screen();
     std::string input;
     getline(std::cin, input);
     if (input == "q")
       playing = false;
 
-    test(input); std::cout <<"\n";
+
   }
 
   return 0;
