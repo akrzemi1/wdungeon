@@ -1,7 +1,13 @@
 #pragma once
+#include <boost/variant.hpp>
+#include <map>
+#include <vector>
+#include <string>
 
 struct SetVariable
 {
+  std::string name;
+  int value;
 };
 
 struct Variable
@@ -12,12 +18,12 @@ struct Variable
 struct Label
 {
   std::string name;
-}
+};
 
 struct MapUpdate
 {
   std::string name;
-}
+};
 
 struct Redirection
 {
@@ -40,10 +46,16 @@ struct Choice
   std::vector<Option> options;
 };
 
+struct End
+{
+  std::string text;
+  bool good;
+};
+
 struct Transition
 {
   std::string narration;
-  boost::variant<Redirection, Choice> action;
+  boost::variant<Redirection, Choice, End> action;
 };
 
 struct GamePlot

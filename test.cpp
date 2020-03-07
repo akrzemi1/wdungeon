@@ -1,5 +1,7 @@
 #include "types.hpp"
 #include "display.hpp"
+#include "plot.hpp"
+#include "parser.hpp"
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -37,6 +39,8 @@ void print_screen()
   }
 }
 
+void test(std::string input);
+
 int main()
 {
   printf("width %d\n", Display{}.size().width);
@@ -45,11 +49,13 @@ int main()
 
   for (bool playing = true; playing;)
   {
-    print_screen();
+//    print_screen();
     std::string input;
     getline(std::cin, input);
     if (input == "q")
       playing = false;
+
+    test(input); std::cout <<"\n";
   }
 
   return 0;
