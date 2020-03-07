@@ -40,6 +40,7 @@ void print_screen()
 }
 
 void test(std::string input);
+void test_file(std::string file_name);
 
 int main()
 {
@@ -49,6 +50,8 @@ int main()
 
   for (bool playing = true; playing;)
   {
+    test_file("./test.plot");
+    break;
 //    print_screen();
     std::string input;
     getline(std::cin, input);
