@@ -4,4 +4,4 @@
 #include <string>
 //#include <boost/outcome/result.hpp>
 
-GamePlot read_plot(std::string file_name);
+plot2::GamePlot read_plot(std::string file_name);

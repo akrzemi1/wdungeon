@@ -99,13 +99,15 @@ int main()
 //  printf("height %d\n", Display{}.size().height);
 
 
-  return perform_tests();
+   perform_tests();
+   const plot2::GamePlot plot_ = read_plot("./test.plot");
   State state(map_extent);
 
   for (bool playing = true; playing;)
   {
-    render(long_text, state);
-    //test_file("./test.plot");
+    //auto const& r =  get<plot2::Choice const&>(plot_[0].redirection);
+    render(*plot_[0].text, state);
+  //  test_file("./test.plot");
     //break;
 //    print_screen();
     std::string input;

@@ -15,7 +15,7 @@ void test_file(std::string file_name)
   test(plottext);
 }
 
-GamePlot read_plot(std::string file_name)
+plot2::GamePlot read_plot(std::string file_name)
 {
   std::ifstream plotfile {file_name};
   std::string plottext;
@@ -27,107 +27,75 @@ GamePlot read_plot(std::string file_name)
 
   namespace qi = boost::spirit::qi;
     namespace ascii = boost::spirit::ascii;
+
   auto first = plottext.begin(), last = plottext.end();
 
-    GamePlot game_plot;
-          bool r = qi::phrase_parse(
-              first,                          /*< start iterator >*/
-              last,                           /*< end iterator >*/
-              qi::double_,   /*< the parser >*/
-              ascii::space                           /*< the skip-parser >*/
-          );
+  auto end = qi::lit("[") >> qi::char_("+!") >> qi::lit("]");
+  auto identifier = qi::lexeme[ +(ascii::alnum | qi::char_('_')) ];
+  auto label = qi::lit("[") >> identifier >> qi::lit("]");
+  auto text = qi::lexeme[ +(qi::char_ - ']' - '[') ];
+  auto map_step = qi::lit("^") >> -qi::char_("NESW") >> -(qi::lit(".") >> (+qi::char_("SNWETCLPRXHUVD#")));
+  auto map = qi::lit("[") >> +map_step >> qi::lit("]");
+  auto cond = qi::lit("[") >> ((identifier >> "=" >> qi::int_) % ",") >> qi::lit("]");
+  auto set_vars = qi::lit("[") >> ((identifier >> ":=" >> qi::int_) % ",") >> qi::lit("]");
+  auto redirection = +(qi::lit("[->]") >> (-cond) >> (-map) >> label >> (-set_vars));
+  auto option = qi::lit("[#]") >> (-cond) >> text >> (-map) >> label >> (-text) >> (-set_vars);
+  auto choice = qi::lit("[?]") >> text >> (+option);
+ auto continuation = qi::hold[redirection | end | choice];
+ auto transition = qi::lit("[##]") >> label >> -map >> -text >> continuation;
+ auto comment = qi::lit("[//]") >> qi::omit[*(qi::char_ - ']' - '[')];
+ auto grammar = +(transition | comment);
+
+ plot2::GamePlot gamePlot;
+
+          bool r = qi::phrase_parse( first, last,  grammar,  ascii::space, gamePlot  );
 
           if (r == false)
             throw std::runtime_error(std::string(first, last));
           if (first != last) // fail if we did not get a full match
               throw std::runtime_error(std::string(first, last));
 
-    return game_plot;
+    return gamePlot;
 }
 
-
-struct Variable_
-{
-  std::string name;
-  int value;
-};
-
-BOOST_FUSION_ADAPT_STRUCT(
-    Variable_,
-    (std::string, name)
-    (int, value)
+BOOST_FUSION_ADAPT_STRUCT (
+  plot2::Variable,
+  name, value
 )
 
-struct SingleRedirection_
-{
-  std::vector<Variable_> cond;
-  boost::optional<std::string> map;
-  std::string next_state;
-  std::vector<Variable_> set_vars;
-};
-
-BOOST_FUSION_ADAPT_STRUCT(
-    SingleRedirection_,
-    (std::vector<Variable_>, cond)
-    (boost::optional<std::string>, map)
-    (std::string, next_state)
-    (std::vector<Variable_>, set_vars)
+BOOST_FUSION_ADAPT_STRUCT (
+    plot2::MapStep,
+    direction, modifications
 )
 
-struct Option_
-{
-  std::vector<Variable_> cond;
-  std::string decision;
-  boost::optional<std::string> map;
-  std::string nextState;
-  boost::optional<std::string> narration;
-  std::vector<Variable_> set_vars;
-};
-
-BOOST_FUSION_ADAPT_STRUCT(
-    Option_,
-    (std::vector<Variable_>, cond)
-    (std::string, decision)
-    (boost::optional<std::string>, map)
-    (std::string, nextState)
-    (boost::optional<std::string>, narration)
-    (std::vector<Variable_>, set_vars)
+BOOST_FUSION_ADAPT_STRUCT (
+    plot2::SingleRedirection,
+    cond, map, next_state, set_vars
 )
 
-struct Choice_{
-  std::string prompt;
-  std::vector<Option_> options;
-};
-
 BOOST_FUSION_ADAPT_STRUCT(
-    Choice_,
-    (std::string, prompt)
-    (std::vector<Option_>, options)
+    plot2::Option,
+    cond, decision, map, nextState, narration, set_vars
 )
 
-using Redirection_ = std::vector<SingleRedirection_>;
-using Alternative = boost::variant<Redirection_, char, Choice_>;
-
-struct Transition_
-{
-  std::string label;
-  boost::optional<std::string> map;
-  boost::optional<std::string> text;
-  Alternative redirection;
-};
+BOOST_FUSION_ADAPT_STRUCT(
+    plot2::Choice,
+    prompt, options
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
-    Transition_,
-    (std::string, label)
-    (boost::optional<std::string>, map)
-    (boost::optional<std::string>, text)
-    (Alternative, redirection)
+    plot2::Transition,
+    label, map, text, redirection
 )
+
+using namespace plot2;
+
 
 void test(std::string input)
 {
- namespace qi = boost::spirit::qi;
-   namespace ascii = boost::spirit::ascii;
+  namespace qi = boost::spirit::qi;
+  namespace ascii = boost::spirit::ascii;
+
 
  auto first = input.begin(), last = input.end();
 
@@ -135,7 +103,8 @@ void test(std::string input)
  auto identifier = qi::lexeme[ +(ascii::alnum | qi::char_('_')) ];
  auto label = qi::lit("[") >> identifier >> qi::lit("]");
  auto text = qi::lexeme[ +(qi::char_ - ']' - '[') ];
- auto map = qi::lit("[") >> qi::lit("^") >> (+qi::char_("^SNWE.TCLPRXHUVD# ")) >> qi::lit("]");
+ auto map_step = qi::lit("^") >> -qi::char_("NESW") >> -(qi::lit(".") >> (+qi::char_("SNWETCLPRXHUVD#")));
+ auto map = qi::lit("[") >> +map_step >> qi::lit("]");
  auto cond = qi::lit("[") >> ((identifier >> "=" >> qi::int_) % ",") >> qi::lit("]");
  auto set_vars = qi::lit("[") >> ((identifier >> ":=" >> qi::int_) % ",") >> qi::lit("]");
  auto redirection = +(qi::lit("[->]") >> (-cond) >> (-map) >> label >> (-set_vars));
@@ -146,21 +115,12 @@ auto transition = qi::lit("[##]") >> label >> -map >> -text >> continuation;
 auto comment = qi::lit("[//]") >> qi::omit[*(qi::char_ - ']' - '[')];
 auto grammar = +(transition | comment);
 
-std::vector<Transition_> output;
-
-std::vector<Variable_> cond_;
-Transition_ trs;
-//Redirection_ output;
+std::vector<Transition> output;
 
 bool r;
-   //r = qi::phrase_parse(first,  last, (identifier >> "=" >> qi::int_) % ",", ascii::space, cond_);
+  // r = qi::phrase_parse(first,  last, continuation, ascii::space, alto);
    r = qi::phrase_parse(first,  last, grammar, ascii::space, output);
 
-   Choice_ ch;
-//  r = qi::phrase_parse( first,  last, choice, ascii::space, ch );
-
-Alternative alt;
-  //   r = qi::phrase_parse( first,  last, continuation, ascii::space, alt );
 
      if (r == false) {
          std::cout << " failed ";
