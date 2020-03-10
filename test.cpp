@@ -6,94 +6,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include  <boost/core/lightweight_test.hpp>
 
-Extent map_extent {.height = 18, .width = 32};
-
-class Map
-{
-public:
-  explicit Map(Extent e) : extent(e), pixels(e.height * e.width) {}
-  const Extent extent;
-  std::vector<char> pixels;
-};
+#include "state.hpp"
+#include "render.hpp"
 
 
-std::string::const_iterator skip_white(std::string::const_iterator it, std::string::const_iterator end)
-{
-  while (it != end && std::isspace(*it) )
-    ++it;
 
-  return it;
-}
 
-std::string select(std::string::const_iterator& it, std::string::const_iterator end, int width)
-{
-  int d = std::distance(it, end);
-  if (d < width)
-  {
-    std::string ans(it, end);
-    it = end;
-    return ans + std::string(width - d, ' ');
-  }
-
-  std::string ans (it, it + width);
-  it += width;
-  return ans;
-}
-
-std::string map_char(char)
-{
-  return "\e[1;40m""\u2524""\e[0m";
-}
-
-std::string repeated(int r, std::string str)
-{
-  std::string ans;
-  for (int i = 0; i < r; ++i)
-    ans += str;
-
-  return ans;
-}
-
-std::string select_map(Map const& map, int row)
-{
-  if (row == 0)
-    return " \e[1;40m""\u250c" + repeated(map.extent.width, "\u2500") + "\u2510""\e[0m";
-  if (row == map.extent.height + 2)
-    return std::string(map.extent.width + 3, ' ');
-
-  if (row == map.extent.height + 1)
-    return " \e[1;40m""\u2514" + repeated(map.extent.width, "\u2500") + "\u2518""\e[0m";
-
-  std::string ans = " \e[1;40m""\u2502""\e[0m";
-
-  for (int i = 0; i < map.extent.width; ++i)
-  {
-    ans += map_char(map.pixels[row * map.extent.width + i]);
-  }
-  ans += "\e[1;40m""\u2502""\e[0m";
-
-  return ans;
-}
-
-void print_screen(std::string const& text, Map const& map)
-{
-  Display{}.clear();
-  const Extent screen = Display{}.size();
-  std::string::const_iterator it = skip_white(text.begin(), text.end());
-
-  for(int row = 0; it != text.end() || row < map.extent.height +2; ++row)
-  {
-    bool map_line = row < map.extent.height +3;
-    int space_in_line = map_line ? screen.width - map.extent.width - 3 : screen.width;
-
-    std::string text_line = select(it, text.end(), space_in_line);
-    if (map_line)
-      text_line += select_map(map, row);
-
-    std::cout << text_line << "\n";
-  }
-}
 
 void print_screen()
 {
@@ -125,16 +45,66 @@ std::string long_text = "wef fwefwe fwefew fwe fwe fwe wef we fwef we fwefwefwef
 "fwefwef nf nrweinu ruwn weuiweuf nenwe fwfiu fui wf wefn ewfiunwef f wefnwe fnwei nfwenf wefi e ifwefweinwei nfwenfiwefn efweui fn"
 "fwefwefjweioj  fwefjief owefj weiojfowe fwej fwej fio weio fweiofjweiofiowefwejfjwefjweiofjio  jfweif w ofweio  fjiowejfwe fo wejf";
 
+
+
+void test_line_break(std::string input, int width, int offset, std::string expected, int expected_offset)
+{
+  std::string::const_iterator it = input.begin() + offset;
+  std::string ans = select_text(it, input.end(), width);
+  BOOST_TEST_EQ(ans, expected);
+
+  std::string::const_iterator old_it = input.begin() + offset;
+  BOOST_TEST_EQ(std::distance(old_it, it) + offset, expected_offset);
+
+  BOOST_TEST_EQ(width, ans.size());
+};
+
+int perform_tests()
+{
+  using namespace std::string_literals;
+
+  test_line_break("wef fwefwe fwefew", 16, 0, "wef fwefwe      ", 11);
+  test_line_break("AA BB", 4, 0, "AA  "s, 3);
+  test_line_break("AA BB", 3, 0, "AA "s, 3);
+  test_line_break("AA BB", 2, 0, "AA"s, 3);
+  test_line_break("AA ", 2, 0, "AA"s, 3);
+
+  test_line_break("AA  BB", 2, 0, "AA"s, 4);
+  test_line_break("AA  BB", 3, 0, "AA "s, 4);
+  test_line_break("AA  BB", 4, 0, "AA  "s, 4);
+  test_line_break("AA  BB", 5, 0, "AA BB"s, 6);
+
+  test_line_break("AA BB", 5, 0, "AA BB"s, 5);
+  test_line_break("AA BB CC", 5, 0, "AA BB"s, 6);
+
+  test_line_break("AA BB.", 10, 0, "AA BB.    "s, 6);
+  test_line_break(" AA", 10, 0, "AA        "s, 3);
+
+  test_line_break("AAAA BBBB.", 6, 0, "AAAA  "s, 5);
+  test_line_break("AAAA BBBB.", 6, 5, "BBBB. "s, 5 + 5);
+
+  test_line_break("AA", 2, 0, "AA"s, 2);
+  test_line_break(" AA", 2, 0, "AA"s, 3);
+
+  test_line_break("-AA / -BB", 12, 0, "-AA         "s, 5);
+  test_line_break("-AA / -BB", 12, 5, "-BB         "s, 9);
+  test_line_break("-AA / -BB", 12, 9, "            "s, 9);
+
+  return boost::report_errors();
+}
+
 int main()
 {
 //  printf("width %d\n", Display{}.size().width);
 //  printf("height %d\n", Display{}.size().height);
 
-  Map map(map_extent);
+
+  return perform_tests();
+  State state(map_extent);
 
   for (bool playing = true; playing;)
   {
-    print_screen(long_text, map);
+    render(long_text, state);
     //test_file("./test.plot");
     //break;
 //    print_screen();
@@ -175,4 +145,6 @@ https://jrgraphix.net/r/Unicode/2500-257F
         #define TC "\e(0\x77\e(B" // 203 Top Cross
         #define VL "\e(0\x78\e(B" // 186 Vertical Line
         #define SP " "            // space string
+
+        https://askubuntu.com/questions/558280/changing-colour-of-text-and-background-of-terminal
 */
