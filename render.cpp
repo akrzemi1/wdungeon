@@ -170,3 +170,37 @@ void render(std::string const& text, State const& state)
     std::cout << text_line << "\n";
   }
 }
+
+void render(std::vector<std::string> const& text, State const& state)
+{
+  assert (!text.empty());
+  int i = 0;
+  std::cout << std::endl;
+  Display{}.clear();
+  const Extent screen = Display{}.size();
+  std::string::const_iterator it = skip_white(text[i].begin(), text[i].end());
+
+  for(int row = 0; i < int(text.size()) /*|| it != text[i].end()*/ || row < state.map.extent.height +2; ++row)
+  {
+    bool map_line = row < state.map.extent.height +3;
+    int space_in_line = map_line ? screen.width - state.map.extent.width - 3 : screen.width;
+
+    std::string text_line (space_in_line, ' ');
+
+    if (i < int(text.size()))
+    {
+      text_line = select(it, text[i].end(), space_in_line);
+      if (it == text[i].end())
+      {
+        ++i;
+        if (i < int(text.size()))
+          it = skip_white(text[i].begin(), text[i].end());
+      }
+    }
+
+    if (map_line)
+      text_line += select_map(state, row);
+
+    std::cout << text_line << "\n";
+  }
+}

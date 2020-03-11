@@ -64,7 +64,12 @@ struct Transition
 
 struct GamePlot
 {
-  Label initial;
+  Label initial;struct Variable
+{
+  std::string name;
+  int value;
+};
+
   std::map<Label, Transition> transitions;
 };
 

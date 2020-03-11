@@ -10,6 +10,7 @@
 
 #include "state.hpp"
 #include "render.hpp"
+#include "processor.hpp"
 
 
 
@@ -93,24 +94,70 @@ int perform_tests()
   return boost::report_errors();
 }
 
+boost::optional<std::string> get_input(State const& state)
+{
+  std::string input;
+  getline(std::cin, input);
+  if (input == "q")
+    return input;
+  for (auto [str, _] : state.options) {
+    if (str == input)
+      return input;
+  }
+
+  return boost::none;
+}
+
+void game(std::string plotfile = "./wdungeon.plot")
+{
+  const plot2::GamePlot plot_ = read_plot(plotfile);
+  State state = initialState(plot_);
+
+  for (;;)
+  {
+    render(state.text, state);
+    if (state.finished)
+      break;
+    boost::optional<std::string> choice = get_input(state);
+    if (choice == boost::none)
+      continue;
+    if (*choice == "q")
+      break;
+
+    state = transition(plot_, state, *choice);
+  }
+}
+
 int main()
 {
+  test_file("./wdungeon.plot"); //return 0;
+
+  game("./wdungeon.plot");  return 0;
+
+
+
+  std::vector<std::string> ttt = {
+    "cvc vczv vccz vzcz vczv czvcz vcz vcz czv czv czv czv cz vzc vcz vcz ",
+    "fdsafd fas faf daf daf df da fda fda fda fa fda fdafgda gda gda gda gda gda g"
+  };
 //  printf("width %d\n", Display{}.size().width);
 //  printf("height %d\n", Display{}.size().height);
 
-test_file("./test.plot"); return 0;
+
    perform_tests();
-   const plot2::GamePlot plot_ = read_plot("./test.plot");
-  State state(map_extent);
+   const plot2::GamePlot plot_ = read_plot("./wdungeon.plot");
+  State state = initialState(plot_);
 
   for (bool playing = true; playing;)
   {
     //auto const& r =  get<plot2::Choice const&>(plot_[0].redirection);
-    render(*plot_[0].text, state);
+  //  render(*plot_[0].text, state);
+  render(state.text, state);
   //  test_file("./test.plot");
     //break;
 //    print_screen();
     std::string input;
+  //render(*plot_[0].text, state);
     getline(std::cin, input);
     if (input == "q")
       playing = false;

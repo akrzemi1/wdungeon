@@ -1,7 +1,7 @@
 [##][init]
 	Do tej pory zalujesz, ze sie tu znalazles. Tutejsi ludzie zabrali cie do podziemi i obiecali cie z nich wypuscic,
 	gdy pokonasz Wladce Podziemi. Teraz nie masz juz wyboru. Nie uda ci sie otworzyc wyjsciowych drzwi,
-	nie znajac hasla. Musisz isc w glab podziemi i wykonac swoja misje...
+	nie znajac hasla. Musisz isc w glab podziemi i wykonac swoja misje... /
 	[->][door_static]
 
 [##][door_static]
