@@ -98,7 +98,7 @@ int main()
 //  printf("width %d\n", Display{}.size().width);
 //  printf("height %d\n", Display{}.size().height);
 
-
+test_file("./test.plot"); return 0;
    perform_tests();
    const plot2::GamePlot plot_ = read_plot("./test.plot");
   State state(map_extent);
@@ -120,6 +120,19 @@ int main()
 
   return 0;
 }
+
+/*
+
+TV = tunel Vertical
+TX = tunel Cross
+TH = tunel Horizontal
+TTD /TTL= tunel T facing down/Left
+TLL / TLR - tunel L shape/ inverse L shape
+TCV - tunel cave
+THU - tunel horizontal (do małej komnaty)
+SPC - ??? (opuscic podziemia)
+# - krata
+*/
 
 /*
 Black       0;30     Dark Gray     1;30

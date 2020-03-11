@@ -34,7 +34,7 @@ plot2::GamePlot read_plot(std::string file_name)
   auto identifier = qi::lexeme[ +(ascii::alnum | qi::char_('_')) ];
   auto label = qi::lit("[") >> identifier >> qi::lit("]");
   auto text = qi::lexeme[ +(qi::char_ - ']' - '[') ];
-  auto map_step = qi::lit("^") >> -qi::char_("NESW") >> -(qi::lit(".") >> (+qi::char_("SNWETCLPRXHUVD#")));
+  auto map_step = qi::lit("^") >> -qi::char_("NESW") >> -(qi::lit(".") >> (+qi::char_("STCLPRXHUVD#")));
   auto map = qi::lit("[") >> +map_step >> qi::lit("]");
   auto cond = qi::lit("[") >> ((identifier >> "=" >> qi::int_) % ",") >> qi::lit("]");
   auto set_vars = qi::lit("[") >> ((identifier >> ":=" >> qi::int_) % ",") >> qi::lit("]");
@@ -103,7 +103,7 @@ void test(std::string input)
  auto identifier = qi::lexeme[ +(ascii::alnum | qi::char_('_')) ];
  auto label = qi::lit("[") >> identifier >> qi::lit("]");
  auto text = qi::lexeme[ +(qi::char_ - ']' - '[') ];
- auto map_step = qi::lit("^") >> -qi::char_("NESW") >> -(qi::lit(".") >> (+qi::char_("SNWETCLPRXHUVD#")));
+ auto map_step = qi::lit("^") >> -qi::char_("NESW") >> -(qi::lit(".") >> (+qi::char_("STCLPRXHUVD#")));
  auto map = qi::lit("[") >> +map_step >> qi::lit("]");
  auto cond = qi::lit("[") >> ((identifier >> "=" >> qi::int_) % ",") >> qi::lit("]");
  auto set_vars = qi::lit("[") >> ((identifier >> ":=" >> qi::int_) % ",") >> qi::lit("]");
