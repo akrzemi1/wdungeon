@@ -16,6 +16,24 @@ Transition const* getNode(std::string name, plot2::GamePlot const& plot)
 }
 
 
+void update_map(Map & map, boost::optional<std::vector<MapStep>> const& algo)
+{
+  if (algo) {
+    for (MapStep const& step : *algo) {
+      if (step.direction) {
+        switch (*step.direction) {
+          case 'N': map.cursor.i -= 1; break;
+          case 'S': map.cursor.i += 1; break;
+          case 'W': map.cursor.j -= 1; break;
+          case 'E': map.cursor.j += 1; break;
+        }
+      }
+      if (step.modifications)
+        map.pixel(map.cursor) = *step.modifications;
+    }
+  }
+}
+
 struct VisitRedirection : boost::static_visitor<Transition const*>
 {
   State& state;
@@ -36,6 +54,8 @@ struct VisitRedirection : boost::static_visitor<Transition const*>
         for (Variable const& v: r.set_vars)
           state.variables[v.name] = v.value;
 
+        update_map(state.map, r.map);
+
         return getNode(r.next_state, plot);
       }
     }
@@ -47,6 +67,7 @@ struct VisitRedirection : boost::static_visitor<Transition const*>
     state.text.emplace_back();
     state.text.emplace_back(choice.prompt);
 
+    state.directions = {};
     for (int i = 1; Option const& opt : choice.options)
     {
       if (std::all_of(opt.cond.begin(), opt.cond.end(), satisfied))
@@ -54,6 +75,23 @@ struct VisitRedirection : boost::static_visitor<Transition const*>
         std::string key {char(i + '0')};
         state.text.emplace_back(key+ ". " + opt.decision);
         state.options[key] = std::distance(choice.options.data(), &opt);
+
+        if (opt.map)
+        {
+          if (boost::optional<char> dir = opt.map->front().direction)
+          {
+            state.options[std::string{*dir}] = std::distance(choice.options.data(), &opt);
+            state.options[std::string{char(tolower(*dir))}] = std::distance(choice.options.data(), &opt);
+
+            switch(*dir) {
+              case 'N': state.directions.N = true; break;
+              case 'E': state.directions.E = true; break;
+              case 'S': state.directions.S = true; break;
+              case 'W': state.directions.W = true; break;
+            }
+          }
+        }
+
         ++i;
       }
     }
@@ -87,9 +125,13 @@ void split_text(std::string const& text, std::vector<std::string> & out)
 void advance_game(Transition const* t, State & state, plot2::GamePlot const& plot)
 {
   assert(t);
+  state.options.clear();
+
   do {
     if (t->text)
       split_text(*t->text, state.text);
+
+    update_map(state.map, t->map);
 
     t = boost::apply_visitor(VisitRedirection{state, plot, *t}, t->redirection);
   } while (t != nullptr);
@@ -124,6 +166,8 @@ State transition(plot2::GamePlot const& plot, State state, std::string choice)
 
   if (opt.narration)
     split_text(*opt.narration, state.text);
+
+  update_map(state.map, opt.map);
 
   for (Variable const& v: opt.set_vars)
     state.variables[v.name] = v.value;

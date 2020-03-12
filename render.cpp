@@ -8,14 +8,46 @@ namespace {
   //printf("\e[97;47m""XXX""\e[0m");
   const std::string cMapBorder = "\e[30;47m";
   const std::string cMapFill = "\e[30;47m";
+  const std::string cMapInvert = "\e[31;107m";
   const std::string cReset = "\e[0m";
-  const std::string cActiveDir = "\e[32;47m";
+  const std::string cActiveDir = "\e[31;47m";
   const std::string cInactiveDir = "\e[30;47m";
 
-  std::string map_char(Map::pixel_type)
+  std::string map_char(Map::pixel_type p, bool invert)
   {
     //const std::string cBlackOverGray = "\e[30;47m";
-    return cMapFill + " " + cReset;
+    std::string ans = invert ? cMapInvert : cMapFill;
+
+    if (p == "TV")
+      ans += "\u2503";
+    else if (p == "TH")
+      ans += "\u2501";
+    else if (p == "TTL")
+      ans += "\u252B";
+    else if (p == "TTR")
+      ans += "\u2523";
+    else if (p == "TTU")
+      ans += "\u253B";
+    else if (p == "TTD")
+      ans += "\u2533";
+    else if (p == "TX")
+      ans += "\u254B";
+    else if (p == "TLL")
+      ans += "\u2517";
+    else if (p == "TLR")
+      ans += "\u251B";
+    else if (p == "TCV")
+      ans += "\u2588";
+    else if (p == "THU")
+      ans += "\u2580";
+    else if (p == "SPC")
+      ans += "\u2592";  // "opuścić podziemia"
+    else if (p == "#")
+      ans += "#";
+    else
+      ans += " ";
+
+    return ans;
   }
 
   std::string repeated(int r, std::string str)
@@ -137,8 +169,11 @@ std::string select_map(State const& state, int row)
       ans += (state.directions.E ? cActiveDir : cInactiveDir) + "E";
     else if (i == 2 && j == 1)
       ans += (state.directions.S ? cActiveDir : cInactiveDir) + "S";
-    else
-      ans += map_char(state.map.pixels[i * state.map.extent.width + j]);
+    else {
+      bool invert = i == state.map.cursor.i && j == state.map.cursor.j;
+      //ans += map_char(state.map.pixels[i * state.map.extent.width + j], invert);
+      ans += map_char(state.map.pixel({i, j}), invert);
+    }
   }
   ans += cMapBorder + "\u2502" + cReset;
 

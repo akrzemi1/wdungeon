@@ -9,12 +9,16 @@ constexpr Extent map_extent {.height = 18, .width = 32};
 class Map
 {
 public:
-  using pixel_type = char;
+  using pixel_type = std::string;
   explicit Map(Extent e) :
     extent(e), pixels(e.height * e.width), strings(e.height * e.width) {}
   /*const*/ Extent extent;
   std::vector<pixel_type> pixels;
   std::vector<std::string> strings;
+  Coordinate cursor {12, 16};
+
+  pixel_type& pixel(Coordinate c) { return pixels[c.i * extent.width + c.j]; }
+  pixel_type const& pixel(Coordinate c) const { return pixels[c.i * extent.width + c.j]; }
 };
 
 struct Directions
