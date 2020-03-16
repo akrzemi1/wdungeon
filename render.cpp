@@ -143,8 +143,25 @@ LOOP:
     return ans;*/
   }
 
+std::string bottom_map_border(int map_width, std::string const& status)
+{
+  assert(int(status.size()) + 2 <= map_width);
+  std::string result = " " + cMapBorder + "\u2514";
 
-std::string select_map(State const& state, int row)
+  if (status.empty())
+  {
+    result += repeated(map_width, "\u2500");
+  }
+  else
+  {
+    result += " " + status + " " + repeated(map_width - 2 - status.size(), "\u2500");
+  }
+
+  result += "\u2518" + cReset;
+  return result;
+}
+
+std::string select_map(State const& state, int row, std::string const& status)
 {
   if (row == 0)
     return " " + cMapBorder + "\u250c" + repeated(state.map.extent.width, "\u2500") + "\u2510" + cReset;
@@ -152,7 +169,7 @@ std::string select_map(State const& state, int row)
     return std::string(state.map.extent.width + 3, ' ');
 
   if (row == state.map.extent.height + 1)
-    return " " + cMapBorder + "\u2514" + repeated(state.map.extent.width, "\u2500") + "\u2518" + cReset;
+    return bottom_map_border(state.map.extent.width, status); //" " + cMapBorder + "\u2514" + repeated(state.map.extent.width, "\u2500") + "\u2518" + cReset;
 
   std::string ans = " " + cMapBorder + "\u2502" + cReset;
   int i = row - 1;
@@ -171,7 +188,6 @@ std::string select_map(State const& state, int row)
       ans += (state.directions.S ? cActiveDir : cInactiveDir) + "S";
     else {
       bool invert = i == state.map.cursor.i && j == state.map.cursor.j;
-      //ans += map_char(state.map.pixels[i * state.map.extent.width + j], invert);
       ans += map_char(state.map.pixel({i, j}), invert);
     }
   }
@@ -200,13 +216,13 @@ void render(std::string const& text, State const& state)
 
     std::string text_line = select(it, text.end(), space_in_line);
     if (map_line)
-      text_line += select_map(state, row);
+      text_line += select_map(state, row, "");
 
     std::cout << text_line << "\n";
   }
 }
 
-void render(std::vector<std::string> const& text, State const& state)
+void render(std::vector<std::string> const& text, State const& state, std::string const& status)
 {
   assert (!text.empty());
   int i = 0;
@@ -234,7 +250,7 @@ void render(std::vector<std::string> const& text, State const& state)
     }
 
     if (map_line)
-      text_line += select_map(state, row);
+      text_line += select_map(state, row, status);
 
     std::cout << text_line << "\n";
   }

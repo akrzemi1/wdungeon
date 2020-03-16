@@ -11,7 +11,7 @@
 #include "state.hpp"
 #include "render.hpp"
 #include "processor.hpp"
-
+#include "save.hpp"
 
 
 
@@ -94,12 +94,35 @@ int perform_tests()
   return boost::report_errors();
 }
 
+bool is_management_input(std::string const& input)
+{
+  return input == "load" || input == "save";
+}
+
+
+std::string process_management_input(std::string const& input, State& state)
+{
+  if (input == "save")
+  {
+    save(state, "saved_game.txt");
+    return "Game saved";
+  }
+  else if(input == "load")
+  {
+    state = load("saved_game.txt");
+    return "Game loaded";
+  }
+
+  return {};
+}
+
 boost::optional<std::string> get_input(State const& state)
 {
   std::string input;
   getline(std::cin, input);
-  if (input == "q")
+  if (input == "q" || is_management_input(input))
     return input;
+
   for (auto [str, _] : state.options) {
     if (str == input)
       return input;
@@ -112,15 +135,26 @@ void game(std::string plotfile = "./wdungeon.plot")
 {
   const plot2::GamePlot plot_ = read_plot(plotfile);
   State state = initialState(plot_);
+  std::string management_status;
 
   for (;;)
   {
-    render(state.text, state);
+    render(state.text, state, management_status);
+    management_status.clear();
+
     if (state.finished)
       break;
+
     boost::optional<std::string> choice = get_input(state);
     if (choice == boost::none)
       continue;
+
+    if (is_management_input(*choice))
+    {
+      management_status = process_management_input(*choice, state);
+      continue;
+    }
+
     if (*choice == "q")
       break;
 
@@ -152,7 +186,7 @@ int main()
   {
     //auto const& r =  get<plot2::Choice const&>(plot_[0].redirection);
   //  render(*plot_[0].text, state);
-  render(state.text, state);
+  render(state.text, state, "Test");
   //  test_file("./test.plot");
     //break;
 //    print_screen();

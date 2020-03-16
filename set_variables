@@ -1,3 +1,4 @@
 #!/bin/bash
 
 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:../boost/
+export LIBRARY_PATH=$LIBRARY_PATH:../boost/bin.v2/libs/serialization/build/gcc-8.1.1/release/link-static/threading-multi/
