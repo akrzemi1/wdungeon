@@ -1,6 +1,7 @@
 #include "render.hpp"
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 #include "display.hpp"
 
 namespace {
