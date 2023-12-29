@@ -1,5 +1,6 @@
 #include "processor.hpp"
 #include <cassert>
+#include <algorithm>
 
 using namespace plot2;
 
