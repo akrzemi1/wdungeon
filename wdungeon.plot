@@ -225,7 +225,7 @@
 [##][paladyn_angry]
 	[?] OPCJE:
 	[#] Zaatakowac Paladyna. [palad_melee_attack]
-	[#] Uciec. [kosz] Blyskawicznie zrywasz sie i uciekasz, kierujac sie na polnoc, az dobiegasz do skrzyzowania.
+	[#] Uciec. [^N.TX][kosz] Blyskawicznie zrywasz sie i uciekasz, kierujac sie na polnoc, az dobiegasz do skrzyzowania.
 
 [##][paladyn_nie_pogada]
 	[?] OPCJE:
