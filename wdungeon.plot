@@ -1331,7 +1331,7 @@
 	Czarownik: -Co? Wynocha! Srac ci sie znowu zachcialo? /
 	Smok: -Stul pysk bo i ciebie sfajcze! /
 	Czarownik: -Doigrales sie. - Czarownik zamachuje rozdzka, cos krzyczy i ciska zielonym plomieniem w smoka.
-	Smok pada na ziemi. Spod pazuchy wypada mu srebrny kluczyk. Czarownik bierze kluczyk i chowa do kieszeni.
+	Smok pada na ziemie. Spod pazuchy wypada mu srebrny kluczyk. Czarownik bierze kluczyk i chowa do kieszeni.
 	[->][wiz_opcje][drag_dead := 1, drag2_w_furii := 0]
 
 [##][wiz_oszukal]
