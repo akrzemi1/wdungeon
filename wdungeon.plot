@@ -1650,7 +1650,7 @@
 		[mam_pierscien_paladyna := 1, mam_3_srebrne := 1, palad_ma_3_srebrne := 0, mam_miecz := 1]
 
 [##][drag2_wsciekly]
-	Po srodku komnaty siedzi smok i drapie sie po rzuchu. Jak tylko cie spostrzega oczy naplywaja mu krwia. /
+	Po srodku komnaty siedzi smok i drapie sie po brzuchu. Jak tylko cie spostrzega oczy naplywaja mu krwia. /
 	-Nawet mi sie niepokazuj na oczy ty gadzie.
 	[?] CO POWIESZ:
 	[#] "Sam jestes gadem." [drag2_wkurzam_dalej] -Sam jestes gadem. /
