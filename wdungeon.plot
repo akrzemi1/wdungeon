@@ -109,7 +109,7 @@
 	[->][palad_martwy_u_siebie]
 
 [##][palad_drag_goni]
-	Potykasz sie o zwloki Paladyna. Wstajesz. Smok wlatuje na skrzyzowanie zatoba.
+	Potykasz sie o zwloki Paladyna. Wstajesz. Smok wlatuje na skrzyzowanie za toba.
 	[?] OPCJE (MARNE):
 	[#] Wiac na poludnie [^S.TV][door] Biegniesz na poludnie, az docierasz do wielkiej komnaty.
 	[#] Wiac na polnoc [^N.TX][kosz] Uciekasz dalej korytarzem na polnoc, czujac za soba sapanie smoka.
